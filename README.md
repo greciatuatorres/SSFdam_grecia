@@ -29,8 +29,10 @@ Antes que nada crea un repositorio Git para esta tarea en tu carpeta de trabajo.
 4) Incluye una opción para que al final si hay algún archivo o carpeta vacía te pregunte si deseas eliminarlos tipo sí/no.
 
 5) Mejora la opción del punto 5 haciendo que te muestre en una lista los archivos y carpetas vacías antes de confirmar eliminación tipo: "Archivos vacíos: vacio1.txt, vacio2.txt...
+   
 
 NOTA: Puedes usar tu editor de texto/código preferido, trabajar cómodo es lo principal. Recuerda ir haciendo commits de cada modificación, cuantos más commits lógicos hagan mejor y por supuesto siguiendo: git flow y conventional commits.
+
 
 
 
