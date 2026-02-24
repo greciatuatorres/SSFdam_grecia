@@ -1,82 +1,54 @@
-#!/bin/bash
+##!/bin/bash
 
-# Si no se pasa parámetro, usa el directorio actual
+# 1. Validación de Directorio
 DIR="${1:-.}"
-
-if [ ! -d "$DIR" ]; then
-    echo "El directorio no existe."
-    exit 1
-fi
-
+[ ! -d "$DIR" ] && echo "Error: El directorio no existe." && exit 1
 cd "$DIR" || exit
 
+# 2. Creación de estructura (Silenciosa)
 mkdir -p IMGS DOCS TXTS PDFS VACIOS
 
-imgs=0
-docs=0
-txts=0
-pdfs=0
-vacios=0
+# 3. Contadores
+imgs=0; docs=0; txts=0; pdfs=0; vacios=0
 
-# Mover archivos según extensión
+# 4. Clasificación de archivos
+# Use nullglob para evitar errores si no hay archivos de un tipo
+shopt -s nullglob
+
 for file in *; do
-    if [ -f "$file" ]; then
-        if [ ! -s "$file" ]; then
-            mv "$file" VACIOS/
-            ((vacios++))
-        else
-            case "$file" in
-                *.jpg|*.png|*.gif)
-                    mv "$file" IMGS/
-                    ((imgs++))
-                    ;;
-                *.docx|*.odt)
-                    mv "$file" DOCS/
-                    ((docs++))
-                    ;;
-                *.txt)
-                    mv "$file" TXTS/
-                    ((txts++))
-                    ;;
-                *.pdf)
-                    mv "$file" PDFS/
-                    ((pdfs++))
-                    ;;
-            esac
-        fi
+    # Saltamos si es un directorio (incluyendo los recién creados)
+    [ -d "$file" ] && continue
+    
+    if [ ! -s "$file" ]; then
+        mv "$file" VACIOS/ && ((vacios++))
+    else
+        case "${file,,}" in # ,, convierte a minúsculas para mayor compatibilidad
+            *.jpg|*.png|*.gif) mv "$file" IMGS/ && ((imgs++)) ;;
+            *.docx|*.odt)      mv "$file" DOCS/ && ((docs++)) ;;
+            *.txt)             mv "$file" TXTS/ && ((txts++)) ;;
+            *.pdf)             mv "$file" PDFS/ && ((pdfs++)) ;;
+        esac
     fi
 done
 
-# Buscar archivos y carpetas vacías
-vacios_lista=()
+# 5. Gestión de elementos vacíos (Carpetas y Archivos)
+# Se busca elementos vacíos excluyendo el punto actual
+mapfile -t vacios_lista < <(find . -mindepth 1 -empty)
 
-while IFS= read -r line; do
-    vacios_lista+=("$line")
-done < <(find . -type f -empty -o -type d -empty)
-
-echo "------------------------------------"
-echo "INFORME:"
-echo "Imágenes movidas: $imgs"
-echo "Documentos movidos: $docs"
-echo "Textos movidos: $txts"
-echo "PDFs movidos: $pdfs"
-echo "Archivos vacíos movidos: $vacios"
-echo "------------------------------------"
+echo -e "\n--- INFORME DE ORDENACIÓN ---"
+echo " Imágenes: $imgs | DOCS: $docs | TXTS: $txts |  PDFs: $pdfs"
+echo " Elementos vacíos detectados: ${#vacios_lista[@]}"
 
 if [ ${#vacios_lista[@]} -gt 0 ]; then
-    echo "Elementos vacíos encontrados:"
-    for item in "${vacios_lista[@]}"; do
-        echo " - $item"
-    done
-
-    read -p "¿Deseas eliminarlos? (s/n): " respuesta
-
-    if [[ "$respuesta" == "s" ]]; then
-        for item in "${vacios_lista[@]}"; do
-            rm -rf "$item"
-        done
-        echo "Elementos vacíos eliminados."
+    echo -e "\nLista de elementos vacíos:"
+    printf " - %s\n" "${vacios_lista[@]}"
+    
+    read -p "¿Eliminar estos elementos? (s/n): " respuesta
+    if [[ "$respuesta" =~ ^[Ss]$ ]]; then
+        for item in "${vacios_lista[@]}"; do rm -rf "$item"; done
+        echo "Limpieza completada."
     else
-        echo "No se eliminaron elementos."
+        echo "  Operación cancelada."
     fi
 fi
+
