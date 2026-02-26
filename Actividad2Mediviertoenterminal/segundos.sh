@@ -1,0 +1,8 @@
+#/bin/bash
+
+DIA=$1
+HORA=$2
+SEGUNDO=$3
+
+TOTAL_SEGUNDOS=$((DIA*86400 + HORA*3600 + SEGUNDO))
+echo "Total de segundos: $TOTAL_SEGUNDOS"
