@@ -6,7 +6,7 @@ peso=$2
 altura_m=$(echo "scale=2; $altura_cm/100" | bc)
 imc=$(echo "scale=2; $peso/($altura_m*$altura_m)" | bc)
 
-echo "Tu IMC es: $imc"
+echo "Mi IMC es: $imc"
 
 if (( $(echo "$imc < 18.5" | bc -l) )); then
     echo "Bajo peso"
